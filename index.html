@@ -63,11 +63,11 @@
             
             <div id="course-form" class="tab-content">
                 <h2>✏️ 修改課程內容</h2>
-                <div class="form-group"><label>啟盟班試堂費：</label><input type="text" id="trial_mami" value="$100"></div>
+                <div class="form-group"><label>啟蒙班試堂費：</label><input type="text" id="trial_mami" value="$100"></div>
                 <div class="form-group"><label>黏土班試堂費：</label><input type="text" id="trial_clay" value="$100"></div>
                 <div class="form-group"><label>師生比例：</label><input type="text" id="ratio" value="1:4/2:6"></div>
                 <hr>
-                <div class="form-group"><label>1️⃣ 探索啟盟班學費：</label><input type="text" id="price_1" value="$730"></div>
+                <div class="form-group"><label>1️⃣ 探索啟蒙班學費：</label><input type="text" id="price_1" value="$730"></div>
                 <div class="form-group"><label>2️⃣ 繪畫班-初班學費：</label><input type="text" id="price_2_low" value="$720"></div>
                 <div class="form-group"><label>2️⃣ 繪畫班-中班學費：</label><input type="text" id="price_2_mid" value="$730"></div>
                 <div class="form-group"><label>2️⃣ 繪畫班-高班學費：</label><input type="text" id="price_2_high" value="$750"></div>
@@ -91,7 +91,7 @@
                 <div class="form-group">
                     <label>班別：</label>
                     <select id="t_class">
-                        <option value="啟盟班">啟盟班</option>
+                        <option value="啟蒙班">啟蒙班</option>
                         <option value="初班">初班</option>
                         <option value="中班">中班</option>
                         <option value="高班">高班</option>
@@ -219,7 +219,7 @@ function generateText() {
         template = `家長你好👋
 
 🎉恆常畫班免費試堂優惠
-（免費試堂只限初中班，啟盟班2.5-3.5試堂費${trial_mami}）
+（免費試堂只限初中班，啟蒙班2.5-3.5試堂費${trial_mami}）
 
 🎉黏土手工班試堂費${trial_clay}
 ✨️即日報名送小畫僮畫簿+圍裙手袖
@@ -232,7 +232,7 @@ function generateText() {
 
 恆常班四堂優惠:
 
-1️⃣探索啟盟班 （ 2.5-3歲 ）🎨
+1️⃣探索啟蒙班 （ 2.5-3歲 ）🎨
   ${price_1}  /  四堂
 
 2️⃣藝術繪畫班 🎨
