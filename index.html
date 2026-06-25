@@ -3,46 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小畫僮教材/收費自動化工具</title>
+    <title>小畫僮教材/收費自動化工具 v3</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-        .container { display: block; max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        h1 { text-align: center; color: #2c3e50; font-size: 22px; margin-bottom: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 10px; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h1 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 15px; }
         
-        .tabs { display: table; width: 100%; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
-        .tab-btn { display: table-cell; text-align: center; padding: 12px; background: #e9ecef; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; border: 1px solid #ddd; border-bottom: none; }
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
+        .tab-btn { flex: 1; text-align: center; padding: 10px; background: #e9ecef; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; border: 1px solid #ddd; border-bottom: none; font-size: 14px; }
         .tab-btn.active { background: #4A90E2; color: white; border-color: #4A90E2; }
         
-        .main-layout { display: table; width: 100%; table-layout: fixed; margin-top: 15px; }
-        .form-section { display: table-cell; width: 55%; padding-right: 20px; vertical-align: top; }
-        .output-section { display: table-cell; width: 45%; padding-left: 20px; vertical-align: top; }
+        .main-layout { display: flex; flex-direction: column; gap: 20px; }
+        @media (min-width: 768px) {
+            .main-layout { flex-direction: row; }
+            .form-section { flex: 1.2; }
+            .output-section { flex: 0.8; }
+        }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        h2 { margin-top: 0; color: #2c3e50; font-size: 16px; border-left: 4px solid #4A90E2; padding-left: 8px; margin-bottom: 15px; }
+        h2 { margin-top: 0; color: #2c3e50; font-size: 15px; border-left: 4px solid #4A90E2; padding-left: 8px; margin-bottom: 12px; }
         .form-group { margin-bottom: 12px; }
-        .inline-group { display: table; width: 100%; margin-bottom: 8px; }
-        .inline-cell { display: table-cell; padding-right: 5px; vertical-align: middle; }
-        .inline-cell:last-child { padding-right: 0; }
         
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
         input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        textarea { height: 420px; font-family: monospace; font-size: 14px; background: #fafafa; resize: vertical; }
+        textarea { height: 400px; font-family: monospace; font-size: 13px; background: #fafafa; resize: vertical; }
         
-        button { background-color: #4A90E2; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; margin-top: 15px; }
-        button:hover { background-color: #357ABD; }
+        /* 專門為手機優化的課堂卡片樣式 */
+        .lesson-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; }
+        .lesson-title { font-weight: bold; font-size: 13px; color: #4A90E2; margin-bottom: 6px; }
+        .lesson-card input { margin-bottom: 6px; }
+        .lesson-card input:last-child { margin-bottom: 0; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .action-btn { flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
+        .btn-add { background-color: #34495e; color: white; }
+        .btn-del { background-color: #e74c3c; color: white; }
+        
+        button.submit-btn { background-color: #4A90E2; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; margin-top: 10px; }
+        button:hover { opacity: 0.9; }
         .copy-btn { background-color: #2ECC71; }
-        .copy-btn:hover { background-color: #27AE60; }
         hr { border: 0; border-top: 1px dashed #ddd; margin: 15px 0; }
-        .num-label { width: 25px; font-weight: bold; font-size: 14px; display: inline-block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎨 小畫僮速效修改小工具 (Make.com 支援版)</h1>
+    <h1>🎨 小畫僮速效修改小工具 v3</h1>
     
     <div class="tabs">
         <div class="tab-btn" onclick="switchTab('course')">1️⃣ 課程招生簡介</div>
@@ -54,11 +63,11 @@
             
             <div id="course-form" class="tab-content">
                 <h2>✏️ 修改課程內容</h2>
-                <div class="form-group"><label>啟蒙班試堂費：</label><input type="text" id="trial_mami" value="$100"></div>
+                <div class="form-group"><label>啟盟班試堂費：</label><input type="text" id="trial_mami" value="$100"></div>
                 <div class="form-group"><label>黏土班試堂費：</label><input type="text" id="trial_clay" value="$100"></div>
                 <div class="form-group"><label>師生比例：</label><input type="text" id="ratio" value="1:4/2:6"></div>
                 <hr>
-                <div class="form-group"><label>1️⃣ 探索啟蒙班學費：</label><input type="text" id="price_1" value="$730"></div>
+                <div class="form-group"><label>1️⃣ 探索啟盟班學費：</label><input type="text" id="price_1" value="$730"></div>
                 <div class="form-group"><label>2️⃣ 繪畫班-初班學費：</label><input type="text" id="price_2_low" value="$720"></div>
                 <div class="form-group"><label>2️⃣ 繪畫班-中班學費：</label><input type="text" id="price_2_mid" value="$730"></div>
                 <div class="form-group"><label>2️⃣ 繪畫班-高班學費：</label><input type="text" id="price_2_high" value="$750"></div>
@@ -70,65 +79,97 @@
             <div id="tuition-form" class="tab-content active">
                 <h2>✏️ 學生及課堂設定</h2>
                 
-                <div class="inline-group">
-                    <div class="inline-cell" style="width: 30%;"><label>年份：</label><input type="text" id="t_year" value="2026"></div>
-                    <div class="inline-cell" style="width: 70%;"><label>學費標題：</label><input type="text" id="t_month" value="1月學費（4堂）"></div>
+                <div class="form-group">
+                    <label>年份：</label>
+                    <input type="text" id="t_year" value="2026">
+                </div>
+                <div class="form-group">
+                    <label>學費標題（例如：1月學費（4堂））：</label>
+                    <input type="text" id="t_month" value="1月學費（4堂）">
                 </div>
 
-                <div class="inline-group">
-                    <div class="inline-cell" style="width: 50%;"><label>班別：</label><input type="text" id="t_class" value="啟蒙班"></div>
-                    <div class="inline-cell" style="width: 50%;"><label>學生姓名：</label><input type="text" id="t_student" value="陳小明"></div>
+                <div class="form-group">
+                    <label>班別：</label>
+                    <select id="t_class">
+                        <option value="啟盟班">啟盟班</option>
+                        <option value="初班">初班</option>
+                        <option value="中班">中班</option>
+                        <option value="高班">高班</option>
+                        <option value="手工班">手工班</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>學生姓名：</label>
+                    <input type="text" id="t_student" value="陳小明">
                 </div>
                 
                 <hr>
-                <label>📅 選擇課堂日期及時間：</label>
+                <label>📅 課堂時間表（手機垂直優化版）：</label>
                 
-                <div class="inline-group">
-                    <div class="inline-cell" style="width: 5%;"><span class="num-label">1.</span></div>
-                    <div class="inline-cell" style="width: 45%;"><input type="date" id="date_picker_1" value="2026-01-07"></div>
-                    <div class="inline-cell" style="width: 50%;"><input type="text" id="time_picker_1" value="17:00-18:00"></div>
-                </div>
-                <div class="inline-group">
-                    <div class="inline-cell" style="width: 5%;"><span class="num-label">2.</span></div>
-                    <div class="inline-cell" style="width: 45%;"><input type="date" id="date_picker_2" value="2026-01-14"></div>
-                    <div class="inline-cell" style="width: 50%;"><input type="text" id="time_picker_2" value="17:00-18:00"></div>
-                </div>
-                <div class="inline-group">
-                    <div class="inline-cell" style="width: 5%;"><span class="num-label">3.</span></div>
-                    <div class="inline-cell" style="width: 45%;"><input type="date" id="date_picker_3" value="2026-01-21"></div>
-                    <div class="inline-cell" style="width: 50%;"><input type="text" id="time_picker_3" value="17:00-18:00"></div>
-                </div>
-                <div class="inline-group">
-                    <div class="inline-cell" style="width: 5%;"><span class="num-label">4.</span></div>
-                    <div class="inline-cell" style="width: 45%;"><input type="date" id="date_picker_4" value="2026-01-28"></div>
-                    <div class="inline-cell" style="width: 50%;"><input type="text" id="time_picker_4" value="17:00-18:00"></div>
+                <div id="lessons-container">
+                    </div>
+
+                <div class="btn-group">
+                    <button type="button" class="action-btn btn-add" onclick="addLesson()">➕ 新增一堂</button>
+                    <button type="button" class="action-btn btn-del" onclick="removeLesson()">➖ 減少一堂</button>
                 </div>
                 
                 <hr>
                 <div class="form-group"><label>學費總計：</label><input type="text" id="t_price" value="$730/四堂"></div>
-                <div class="form-group"><label>Payme 電話及連結：</label>
-                    <div class="inline-group">
-                        <div class="inline-cell" style="width: 35%;"><input type="text" id="t_payme_tel" value="66506009"></div>
-                        <div class="inline-cell" style="width: 65%;"><input type="text" id="t_payme" value="https://payme.hsbc/cszenga"></div>
-                    </div>
-                </div>
+                <div class="form-group"><label>Payme 電話：</label><input type="text" id="t_payme_tel" value="66506009"></div>
+                <div class="form-group"><label>Payme 連結：</label><input type="text" id="t_payme" value="https://payme.hsbc/cszenga"></div>
                 <div class="form-group"><label>銀行戶口資料：</label><input type="text" id="t_bank" value="HSBC ：Cheung Sxx Nxx&#10;197 652407 833"></div>
                 <div class="form-group"><label>轉數快 ID：</label><input type="text" id="t_fps" value="1473214"></div>
             </div>
 
-            <button onclick="generateText()">🔄 更新及格式化文字</button>
+            <button class="submit-btn" onclick="generateText()">🔄 更新及格式化文字</button>
         </div>
 
         <div class="output-section">
             <h2>📱 固定格式輸出 (支援 Make.com)</h2>
             <textarea id="outputText" readonly></textarea>
-            <button class="copy-btn" onclick="copyToClipboard()">📋 複製全部文字</button>
+            <button class="submit-btn copy-btn" onclick="copyToClipboard()">📋 複製全部文字</button>
         </div>
     </div>
 </div>
 
 <script>
-let currentMode = 'tuition'; // 預設打開對接 Make.com 的分頁
+let currentMode = 'tuition';
+let lessonCount = 0;
+
+// 預設日期數據，方便開機測試
+const defaultDates = ["2026-01-07", "2026-01-14", "2026-01-21", "2026-01-28"];
+
+// 新增一堂課的 DOM
+function addLesson() {
+    if(lessonCount >= 12) { alert("最多設定 12 堂課"); return; }
+    lessonCount++;
+    
+    const container = document.getElementById('lessons-container');
+    const card = document.createElement('div');
+    card.className = 'lesson-card';
+    card.id = `lesson_card_${lessonCount}`;
+    
+    // 預設日期處理
+    let defaultDate = defaultDates[lessonCount-1] || "";
+    
+    card.innerHTML = `
+        <div class="lesson-title">第 ${lessonCount} 堂</div>
+        <input type="date" id="date_picker_${lessonCount}" value="${defaultDate}" onchange="generateText()">
+        <input type="text" id="time_picker_${lessonCount}" value="17:00-18:00" placeholder="上堂時間" oninput="generateText()">
+    `;
+    container.appendChild(card);
+    generateText();
+}
+
+// 減少一堂課
+function removeLesson() {
+    if(lessonCount <= 1) { alert("最少需要 1 堂課"); return; }
+    const card = document.getElementById(`lesson_card_${lessonCount}`);
+    if(card) card.remove();
+    lessonCount--;
+    generateText();
+}
 
 function switchTab(mode) {
     currentMode = mode;
@@ -145,7 +186,6 @@ function switchTab(mode) {
     generateText();
 }
 
-// 根據自動轉化星期幾
 function getWeekday(dateString) {
     if(!dateString) return '';
     const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -153,12 +193,11 @@ function getWeekday(dateString) {
     return weekdays[d.getDay()];
 }
 
-// 格式化日期為 MM-DD
 function formatMMDD(dateString) {
     if(!dateString) return '';
     const parts = dateString.split('-');
     if(parts.length === 3) {
-        return `${parts[1]}-${parts[2]}`; // 回傳 01-07 格式
+        return `${parts[1]}-${parts[2]}`;
     }
     return '';
 }
@@ -180,7 +219,7 @@ function generateText() {
         template = `家長你好👋
 
 🎉恆常畫班免費試堂優惠
-（免費試堂只限初中班，啟蒙班2.5-3.5試堂費${trial_mami}）
+（免費試堂只限初中班，啟盟班2.5-3.5試堂費${trial_mami}）
 
 🎉黏土手工班試堂費${trial_clay}
 ✨️即日報名送小畫僮畫簿+圍裙手袖
@@ -193,7 +232,7 @@ function generateText() {
 
 恆常班四堂優惠:
 
-1️⃣探索啟蒙班 （ 2.5-3歲 ）🎨
+1️⃣探索啟盟班 （ 2.5-3歲 ）🎨
   ${price_1}  /  四堂
 
 2️⃣藝術繪畫班 🎨
@@ -210,33 +249,25 @@ function generateText() {
 📍${address}`;
 
     } else {
-        // 學費收費範本（Make.com 優化格式）
         const t_month = document.getElementById('t_month').value;
         const t_year = document.getElementById('t_year').value;
         const t_class = document.getElementById('t_class').value;
         const t_student = document.getElementById('t_student').value;
         
-        const d1 = document.getElementById('date_picker_1').value;
-        const t1 = document.getElementById('time_picker_1').value;
-        const d2 = document.getElementById('date_picker_2').value;
-        const t2 = document.getElementById('time_picker_2').value;
-        const d3 = document.getElementById('date_picker_3').value;
-        const t3 = document.getElementById('time_picker_3').value;
-        const d4 = document.getElementById('date_picker_4').value;
-        const t4 = document.getElementById('time_picker_4').value;
+        let schedule = '';
+        for(let i=1; i<=lessonCount; i++){
+            const d = document.getElementById(`date_picker_${i}`).value;
+            const t = document.getElementById(`time_picker_${i}`).value;
+            if(d) {
+                schedule += `${i}. [${formatMMDD(d)}] (${getWeekday(d)}) [${t}]\n`;
+            }
+        }
         
         const t_price = document.getElementById('t_price').value;
         const t_payme = document.getElementById('t_payme').value;
         const t_payme_tel = document.getElementById('t_payme_tel').value;
         const t_bank = document.getElementById('t_bank').value;
         const t_fps = document.getElementById('t_fps').value;
-
-        // 生成時間表，嚴格控制空格，確保固定格式
-        let schedule = '';
-        if(d1) schedule += `1. [${formatMMDD(d1)}] (${getWeekday(d1)}) [${t1}]\n`;
-        if(d2) schedule += `2. [${formatMMDD(d2)}] (${getWeekday(d2)}) [${t2}]\n`;
-        if(d3) schedule += `3. [${formatMMDD(d3)}] (${getWeekday(d3)}) [${t3}]\n`;
-        if(d4) schedule += `4. [${formatMMDD(d4)}] (${getWeekday(d4)}) [${t4}]\n`;
 
         template = `${t_month}
 年份：[${t_year}]
@@ -245,8 +276,7 @@ function generateText() {
 學生：[${t_student}]
 
 【課堂時間表】
-${schedule}
-${t_price}
+${schedule}${t_price}
 
 付款方式如下：
 
@@ -271,11 +301,13 @@ function copyToClipboard() {
     copyText.select();
     copyText.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(copyText.value);
-    alert("已複製固定格式文字！可以拿去測試 Make.com 了！");
+    alert("已複製固定格式文字！");
 }
 
-// 首次加載
-generateText();
+// 初始化預設 4 堂課
+for(let i=0; i<4; i++) {
+    addLesson();
+}
 </script>
 
 </body>
