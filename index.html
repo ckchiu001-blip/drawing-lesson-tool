@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小畫僮教材/收費自動化工具 v6</title>
+    <title>小畫僮教材/收費自動化工具 v8.0-豪華連線版</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 8px; background-color: #f4f6f9; color: #333; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        h1 { text-align: center; color: #2c3e50; font-size: 18px; margin-bottom: 12px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; }
+        h1 { text-align: center; color: #2c3e50; font-size: 18px; margin-bottom: 6px; }
         
+        /* 載入中狀態提示 */
+        .loading-banner { background: #fff9db; color: #92400e; padding: 6px; text-align: center; font-size: 12px; font-weight: bold; border-radius: 6px; margin-bottom: 10px; display: none; }
+
         .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 12px; }
         .tab-btn { flex: 1; text-align: center; padding: 8px; background: #e9ecef; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; border: 1px solid #ddd; border-bottom: none; font-size: 13px; }
         .tab-btn.active { background: #4A90E2; color: white; border-color: #4A90E2; }
         
-        .main-layout { display: flex; flex-direction: row; gap: 10px; }
+        .main-layout { display: flex; flex-direction: row; gap: 10px; position: relative; }
         .form-section { flex: 1.1; min-width: 0; }
         .output-section { flex: 0.9; min-width: 0; position: sticky; top: 10px; height: fit-content; }
         
@@ -22,25 +25,45 @@
         .tab-content.active { display: block; }
         
         h2 { margin-top: 0; color: #2c3e50; font-size: 14px; border-left: 4px solid #4A90E2; padding-left: 6px; margin-bottom: 10px; }
-        .form-group { margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; position: relative; }
         
         label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 12px; }
         input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         
-        textarea { height: 500px; font-family: monospace; font-size: 11px; background: #fafafa; resize: vertical; padding: 6px; }
-        @media (min-width: 768px) {
-            textarea { font-size: 13px; height: 550px; }
-        }
+        /* 智慧搜尋選單改良 */
+        .combobox-wrapper { position: relative; display: flex; align-items: center; }
+        .combobox-toggle { position: absolute; right: 8px; cursor: pointer; color: #666; font-size: 12px; user-select: none; }
+        .dropdown-panel { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
+        .dropdown-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown-item:hover { background: #f0f7ff; color: #4A90E2; }
         
-        .lesson-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-bottom: 8px; }
-        .lesson-title { font-weight: bold; font-size: 12px; color: #4A90E2; margin-bottom: 4px; }
-        .lesson-card input { margin-bottom: 4px; padding: 4px; font-size: 12px; }
-        .lesson-card input:last-child { margin-bottom: 0; }
+        /* 備忘錄開啟與雲端儲存按鈕 */
+        .action-row-btn { display: inline-block; margin-top: 5px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .action-row-btn:hover { background: #bae6fd; }
+        .btn-save-cloud { background: #dcfce7; color: #15803d; border-color: #bbf7d0; margin-left: 6px; }
+        .btn-save-cloud:hover { background: #bbf7d0; }
 
-        .lock-container { display: flex; align-items: center; gap: 5px; margin-bottom: 10px; background: #e3faf2; padding: 6px; border-radius: 4px; border: 1px solid #a3e6cd; font-size: 12px; font-weight: bold; color: #0e6245; }
+        /* 雙重鎖定區塊樣式 */
+        .lock-container { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; background: #f1f5f9; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: bold; color: #334155; }
+        .lock-container.active-lock { background: #e2fbe8; border-color: #a3e6cd; color: #0e6245; }
         .lock-container input { width: auto; cursor: pointer; }
 
-        .btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
+        /* 大文字框排版與收費安全鎖 */
+        .textarea-lock-group { background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 10px; }
+        .textarea-lock-group textarea { height: 60px; font-size: 12px; background: white; resize: none; margin-bottom: 6px; }
+        .textarea-lock-group textarea:disabled { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+
+        /* 預覽輸出大文字框 */
+        #outputText { height: 480px; font-family: monospace; font-size: 13px; background: #fafafa; padding: 6px; }
+        
+        /* 排堂卡片與下拉時間 */
+        .lesson-grid { display: flex; flex-direction: column; gap: 8px; }
+        .lesson-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; }
+        .lesson-title { font-weight: bold; font-size: 12px; color: #4A90E2; margin-bottom: 4px; }
+        .lesson-row { display: flex; gap: 6px; }
+        .lesson-row input, .lesson-row select { flex: 1; padding: 4px; font-size: 12px; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 6px; }
         .action-btn { flex: 1; padding: 6px; font-size: 12px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
         .btn-add { background-color: #34495e; color: white; }
         .btn-del { background-color: #e74c3c; color: white; }
@@ -49,12 +72,35 @@
         button:hover { opacity: 0.9; }
         .copy-btn { background-color: #2ECC71; }
         hr { border: 0; border-top: 1px dashed #ddd; margin: 12px 0; }
+
+        /* 🌟 豪華版：右側彈出式 WhatsApp 備忘錄貼紙 🌟 */
+        .whatsapp-sticker {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            width: 44%;
+            height: 380px;
+            background: #fffbeb;
+            border: 2px solid #fef08a;
+            box-shadow: -4px 4px 15px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            padding: 6px;
+        }
+        .sticker-header { display: flex; justify-content: space-between; align-items: center; background: #fef08a; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; color: #713f12; margin-bottom: 4px; }
+        .sticker-close-btn { background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 1px 6px; cursor: pointer; font-size: 11px; }
+        .sticker-body { flex: 1; display: flex; flex-direction: column; }
+        .sticker-body textarea { flex: 1; width: 100%; height: 100%; font-size: 12px; background: white; border: 1px solid #fde047; padding: 6px; resize: none; color: #451a03; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎨 小畫僮速效修改小工具 v6</h1>
+    <h1>🎨 小畫僮速效修改小工具 v8.0 (雲端豪華連線版)</h1>
+
+    <div id="loadingBanner" class="loading-banner">🔄 正在與 Google Sheet 同步最新學生名冊...</div>
     
     <div class="tabs">
         <div class="tab-btn" onclick="switchTab('course')">1️⃣ 課程招生簡介</div>
@@ -66,7 +112,7 @@
             
             <div id="course-form" class="tab-content">
                 <h2>✏️ 修改課程內容</h2>
-                <div class="form-group"><label>啟蒙班試堂費：</label><input type="text" id="trial_mami" value="$100" oninput="generateText()"></div>
+                <div class="form-group"><label>啟盟班試堂費：</label><input type="text" id="trial_mami" value="$100" oninput="generateText()"></div>
                 <div class="form-group"><label>黏土班試堂費：</label><input type="text" id="trial_clay" value="$100" oninput="generateText()"></div>
                 <div class="form-group"><label>師生比例：</label><input type="text" id="ratio" value="1:4/2:6" oninput="generateText()"></div>
                 <hr>
@@ -83,37 +129,72 @@
                 <h2>✏️ 學生及課堂設定</h2>
                 <div class="form-group"><label>年份：</label><input type="text" id="t_year" value="2026" oninput="generateText()"></div>
                 <div class="form-group"><label>學費標題：</label><input type="text" id="t_month" value="1月學費（4堂）" oninput="generateText()"></div>
+                
                 <div class="form-group">
                     <label>班別：</label>
-                    <select id="t_class" onchange="generateText()">
-                        <option value="啟蒙班">啟蒙班</option>
-                        <option value="初班">初班</option>
-                        <option value="中班">中班</option>
-                        <option value="高班">高班</option>
-                        <option value="手工班">手工班</option>
-                        <option value="綜合班">綜合班</option>
+                    <select id="t_class" onchange="handleClassChange()">
+                        <option value="全部">-- 全部班別 --</option>
+                        <option value="探索啟蒙班">探索啟蒙班</option>
+                        <option value="繪畫創作初班">繪畫創作初班</option>
+                        <option value="繪畫創作中班">繪畫創作中班</option>
+                        <option value="繪畫創作高班">繪畫創作高班</option>
+                        <option value="黏土手工班">黏土手工班</option>
+                        <option value="繪畫+黏土綜合班">繪畫+黏土綜合班</option>
                     </select>
                 </div>
-                <div class="form-group"><label>學生姓名：</label><input type="text" id="t_student" value="陳小明" oninput="generateText()"></div>
+
+                <div class="form-group">
+                    <label>學生姓名：</label>
+                    <div class="combobox-wrapper">
+                        <input type="text" id="t_student" value="陳小明" placeholder="打字可模糊搜尋雲端學生..." oninput="handleStudentInput()" onclick="showDropdown()" autocomplete="off">
+                        <span class="combobox-toggle" onclick="toggleDropdown(event)">▼</span>
+                        <div id="student-dropdown" class="dropdown-panel"></div>
+                    </div>
+                    
+                    <div style="margin-top: 4px;">
+                        <button type="button" class="action-row-btn" onclick="toggleWhatsappSticker()">📝 開啟 WhatsApp 備忘錄貼紙</button>
+                        <button type="button" class="action-row-btn btn-save-cloud" onclick="saveToGoogleSheet()">💾 儲存此生紀錄至 Google Sheet</button>
+                    </div>
+                </div>
                 <hr>
                 
-                <label>📅 課堂時間表：</label>
-                <div class="lock-container">
+                <label>📅 課堂時間表連鎖控制：</label>
+                <div class="lock-container active-lock">
+                    <input type="checkbox" id="lock_date_toggle" checked onchange="generateText()">
+                    <label for="lock_date_toggle" style="margin:0; cursor:pointer;">📅 鎖定全部日期跟隨第一堂（自動 +7 日）</label>
+                </div>
+                <div class="lock-container active-lock">
                     <input type="checkbox" id="lock_time_toggle" checked onchange="handleLockToggle()">
                     <label for="lock_time_toggle" style="margin:0; cursor:pointer;">🔒 鎖定全部時間跟隨第一堂</label>
                 </div>
 
-                <div id="lessons-container"></div>
+                <div id="lessons-container" class="lesson-grid"></div>
                 <div class="btn-group">
-                    <button type="button" class="action-btn btn-add" onclick="addLesson()">➕ 新增</button>
-                    <button type="button" class="action-btn btn-del" onclick="removeLesson()">➖ 減少</button>
+                    <button type="button" class="action-btn btn-add" onclick="addLesson()">➕ 新增一堂</button>
+                    <button type="button" class="action-btn btn-del" onclick="removeLesson()">➖ 減少一堂</button>
                 </div>
                 <hr>
+                
                 <div class="form-group"><label>學費總計：</label><input type="text" id="t_price" value="$730/四堂" oninput="generateText()"></div>
-                <div class="form-group"><label>Payme 電話：</label><input type="text" id="t_payme_tel" value="66506009" oninput="generateText()"></div>
-                <div class="form-group"><label>Payme 連結：</label><input type="text" id="t_payme" value="https://payme.hsbc/cszenga" oninput="generateText()"></div>
-                <div class="form-group"><label>銀行戶口資料：</label><input type="text" id="t_bank" value="HSBC ：Cheung Sxx Nxx&#10;197 652407 833" oninput="generateText()"></div>
-                <div class="form-group"><label>轉數快 ID：</label><input type="text" id="t_fps" value="1473214" oninput="generateText()"></div>
+                
+                <div class="textarea-lock-group">
+                    <div class="lock-container active-lock" style="margin-bottom:6px;">
+                        <input type="checkbox" id="lock_payment_toggle" checked onchange="handlePaymentLockToggle()">
+                        <label for="lock_payment_toggle" style="margin:0; cursor:pointer;">🔒 鎖定基本收費資料（防止誤觸修改）</label>
+                    </div>
+                    
+                    <label>Payme 電話：</label>
+                    <textarea id="t_payme_tel" oninput="generateText()" disabled>66506009</textarea>
+                    
+                    <label>Payme 連結：</label>
+                    <textarea id="t_payme" oninput="generateText()" disabled>https://payme.hsbc/cszenga</textarea>
+                    
+                    <label>銀行戶口資料：</label>
+                    <textarea id="t_bank" oninput="generateText()" disabled style="height:50px;">HSBC ：Cheung Sxx Nxx&#10;197 652407 833</textarea>
+                    
+                    <label>轉數快 ID：</label>
+                    <textarea id="t_fps" oninput="generateText()" disabled>1473214</textarea>
+                </div>
             </div>
         </div>
 
@@ -122,14 +203,67 @@
             <textarea id="outputText" readonly></textarea>
             <button class="submit-btn copy-btn" onclick="copyToClipboard()">📋 複製</button>
         </div>
+
+        <div id="whatsappSticker" class="whatsapp-sticker">
+            <div class="sticker-header">
+                <span>📌 WhatsApp 備忘貼紙（看著直接填）</span>
+                <button class="sticker-close-btn" onclick="toggleWhatsappSticker()">❌ 摺埋</button>
+            </div>
+            <div class="sticker-body">
+                <textarea placeholder="將 WhatsApp 與客人的對話或日期直接 Paste 喺呢度..."></textarea>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+// 1. 配置你提供的專屬 Google Apps Script API 網址
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyop4MSnPH1QnxwToZYRvXniaoV5-12F1bsQmQ-j7Wqdr5d0eQXlZaP1nnHN2TZg6au-A/exec";
+
+let cloudStudents = []; 
 let currentMode = 'tuition';
 let lessonCount = 0;
-const defaultDates = ["2026-01-07", "2026-01-14", "2026-01-21", "2026-01-28"];
 
+// 2. 初始化全自動加載雲端 Google Sheet 學生名冊
+async function fetchCloudStudents() {
+    const banner = document.getElementById('loadingBanner');
+    banner.style.display = 'block';
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        cloudStudents = await response.json();
+        banner.style.backgroundColor = "#dcfce7";
+        banner.style.color = "#15803d";
+        banner.innerText = `✅ 成功同步雲端學生名冊！共讀取 ${cloudStudents.length} 位學生。`;
+        setTimeout(() => banner.style.display = 'none', 3000);
+    } catch (error) {
+        console.error("載入失敗：", error);
+        banner.style.backgroundColor = "#fee2e2";
+        banner.style.color = "#991b1b";
+        banner.innerText = "❌ 雲端名冊同步失敗，將使用本地暫存。";
+    }
+    renderDropdownItems();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    fetchCloudStudents();
+    for(let i=0; i<4; i++) { addLesson(); }
+});
+
+// 3. 生成 15 分鐘一格的時間下拉選單選項
+function generateTimeOptions(selectedValue) {
+    let html = '';
+    for (let h = 8; h <= 22; h++) {
+        let hourStr = h < 10 ? '0' + h : '' + h;
+        ['00', '15', '30', '45'].forEach(m => {
+            let timeStr = `${hourStr}:${m}`;
+            let sel = timeStr === selectedValue ? 'selected' : '';
+            html += `<option value="${timeStr}" ${sel}>${timeStr}</option>`;
+        });
+    }
+    return html;
+}
+
+// 4. 動態新增課堂卡片（日期 + 下拉式時間）
 function addLesson() {
     if(lessonCount >= 12) { alert("最多設定 12 堂課"); return; }
     lessonCount++;
@@ -137,22 +271,35 @@ function addLesson() {
     const card = document.createElement('div');
     card.className = 'lesson-card';
     card.id = `lesson_card_${lessonCount}`;
-    let defaultDate = defaultDates[lessonCount-1] || "";
     
-    // 判斷是否需要跟隨第一堂時間
-    let defaultTime = "17:00";
+    // 計算初始加 7 日日期
+    let initDate = "";
+    if (lessonCount > 1 && document.getElementById('lock_date_toggle').checked) {
+        const firstDateVal = document.getElementById('date_picker_1').value;
+        if (firstDateVal) {
+            let d = new Date(firstDateVal);
+            d.setDate(d.getDate() + (lessonCount - 1) * 7);
+            initDate = d.toISOString().split('T')[0];
+        }
+    }
+
+    // 計算初始時間
+    let initTime = "17:00";
     if (lessonCount > 1 && document.getElementById('lock_time_toggle').checked) {
-        defaultTime = document.getElementById('time_picker_1').value;
+        initTime = document.getElementById('time_picker_1').value;
     }
 
     card.innerHTML = `
         <div class="lesson-title">第 ${lessonCount} 堂</div>
-        <input type="date" id="date_picker_${lessonCount}" value="${defaultDate}" onchange="generateText()">
-        <input type="text" id="time_picker_${lessonCount}" value="${defaultTime}" placeholder="開始時間（如 17:00）" oninput="syncOrUpdate(${lessonCount})">
+        <div class="lesson-row">
+            <input type="date" id="date_picker_${lessonCount}" value="${initDate}" onchange="handleDateChange(${lessonCount})">
+            <select id="time_picker_${lessonCount}" onchange="syncOrUpdate(${lessonCount})">
+                ${generateTimeOptions(initTime)}
+            </select>
+        </div>
     `;
     container.appendChild(card);
     
-    // 如果處於鎖定狀態，新加的要停用
     if (lessonCount > 1 && document.getElementById('lock_time_toggle').checked) {
         document.getElementById(`time_picker_${lessonCount}`).disabled = true;
     }
@@ -166,7 +313,22 @@ function removeLesson() {
     generateText();
 }
 
-// 處理時間輸入與同步
+// 5. 處理排堂日期連鎖事件（+7日自動推進）
+function handleDateChange(index) {
+    if (index === 1 && document.getElementById('lock_date_toggle').checked) {
+        const firstDateVal = document.getElementById('date_picker_1').value;
+        if (firstDateVal) {
+            for (let i = 2; i <= lessonCount; i++) {
+                let d = new Date(firstDateVal);
+                d.setDate(d.getDate() + (i - 1) * 7);
+                document.getElementById(`date_picker_${i}`).value = d.toISOString().split('T')[0];
+            }
+        }
+    }
+    generateText();
+}
+
+// 6. 處理排堂時間同步控制
 function syncOrUpdate(index) {
     if (index === 1 && document.getElementById('lock_time_toggle').checked) {
         const firstTimeValue = document.getElementById('time_picker_1').value;
@@ -178,19 +340,18 @@ function syncOrUpdate(index) {
     generateText();
 }
 
-// 處理鎖定開關切換
 function handleLockToggle() {
     const isLocked = document.getElementById('lock_time_toggle').checked;
+    const parent = document.getElementById('lock_time_toggle').parentElement;
     if (isLocked) {
+        parent.classList.add('active-lock');
         const firstTimeValue = document.getElementById('time_picker_1').value;
         for (let i = 2; i <= lessonCount; i++) {
             const el = document.getElementById(`time_picker_${i}`);
-            if (el) {
-                el.value = firstTimeValue;
-                el.disabled = true;
-            }
+            if (el) { el.value = firstTimeValue; el.disabled = true; }
         }
     } else {
+        parent.classList.remove('active-lock');
         for (let i = 2; i <= lessonCount; i++) {
             const el = document.getElementById(`time_picker_${i}`);
             if (el) el.disabled = false;
@@ -199,17 +360,144 @@ function handleLockToggle() {
     generateText();
 }
 
-// 自動將 HH:MM 加上 1 小時
+// 7. 處理收費大文字框安全鎖
+function handlePaymentLockToggle() {
+    const isLocked = document.getElementById('lock_payment_toggle').checked;
+    const parent = document.getElementById('lock_payment_toggle').parentElement;
+    const ids = ['t_payme_tel', 't_payme', 't_bank', 't_fps'];
+    
+    if (isLocked) {
+        parent.classList.add('active-lock');
+        ids.forEach(id => document.getElementById(id).disabled = true);
+    } else {
+        parent.classList.remove('active-lock');
+        ids.forEach(id => document.getElementById(id).disabled = false);
+    }
+}
+
+// 8. 智慧搜尋與模糊篩選名單
+function showDropdown() { document.getElementById('student-dropdown').style.display = 'block'; renderDropdownItems(); }
+function hideDropdown() { setTimeout(() => { document.getElementById('student-dropdown').style.display = 'none'; }, 250); }
+function toggleDropdown(event) { event.stopPropagation(); const d = document.getElementById('student-dropdown'); d.style.display = (d.style.display === 'block') ? 'none' : 'block'; if(d.style.display === 'block') renderDropdownItems(); }
+
+function renderDropdownItems() {
+    const selectedClass = document.getElementById('t_class').value;
+    const searchKey = document.getElementById('t_student').value.trim().toLowerCase();
+    const dropdown = document.getElementById('student-dropdown');
+    dropdown.innerHTML = '';
+
+    const filtered = cloudStudents.filter(s => {
+        const matchClass = (selectedClass === '全部' || s.className === selectedClass);
+        const matchName = s.name.toLowerCase().includes(searchKey);
+        return matchClass && matchName;
+    });
+
+    if(filtered.length === 0) {
+        dropdown.innerHTML = `<div class="dropdown-item" style="color: #94a3b8;">✨ 新名字 (直接儲存即可車上雲端)</div>`;
+        return;
+    }
+
+    filtered.forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.innerHTML = `<span><strong>${s.name}</strong> <small style="color:#666">(${s.className})</small></span>`;
+        item.onclick = () => {
+            document.getElementById('t_student').value = s.name;
+            document.getElementById('t_class').value = s.className;
+            hideDropdown();
+            generateText();
+        };
+        dropdown.appendChild(item);
+    });
+}
+
+function handleClassChange() { renderDropdownItems(); generateText(); }
+function handleStudentInput() { showDropdown(); renderDropdownItems(); generateText(); }
+document.addEventListener('click', (e) => { if (!e.target.closest('.combobox-wrapper')) document.getElementById('student-dropdown').style.display = 'none'; });
+
+// 9. 🌟 豪華版核心：控制 WhatsApp 備忘貼紙彈出與關閉 🌟
+function toggleWhatsappSticker() {
+    const sticker = document.getElementById('whatsappSticker');
+    if (sticker.style.display === 'flex') {
+        sticker.style.display = 'none';
+    } else {
+        sticker.style.display = 'flex';
+    }
+}
+
+// 10. 💾 核心：發射 POST 請求直接將紀錄寫入 Google Sheet (TuitionHistory)
+async function saveToGoogleSheet() {
+    const name = document.getElementById('t_student').value.trim();
+    const cls = document.getElementById('t_class').value;
+    const title = document.getElementById('t_month').value;
+    const price = document.getElementById('t_price').value;
+    
+    if(!name) { alert("請先輸入學生姓名！"); return; }
+    if(cls === "全部") { alert("請選擇具體班別，唔好揀 --全部班別--"); return; }
+
+    // 格式化目前畫面上排好的時間表段落
+    let scheduleText = '';
+    for(let i=1; i<=lessonCount; i++){
+        const d = document.getElementById(`date_picker_${i}`).value;
+        const t = document.getElementById(`time_picker_${i}`).value;
+        if(d) scheduleText += `${i}. ${formatMMDD(d)} (${getWeekday(d)}) ${calculateEndTime(t)}\n`;
+    }
+
+    const payload = {
+        name: name,
+        className: cls,
+        monthTitle: title,
+        price: price,
+        schedule: scheduleText.trim()
+    };
+
+    if(!confirm(`確定要將 [${name}] 的歷史存檔，直接發送存入雲端 Google Sheet 嗎？`)) return;
+
+    const banner = document.getElementById('loadingBanner');
+    banner.style.backgroundColor = "#fff9db";
+    banner.style.color = "#92400e";
+    banner.innerText = "🚀 正在發送數據至雲端資料庫，請稍候...";
+    banner.style.display = 'block';
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors", // 配合 Google Script 的重定向傳輸機制
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        
+        banner.style.backgroundColor = "#dcfce7";
+        banner.style.color = "#15803d";
+        banner.innerText = `🎉 成功！[${name}] 紀錄已永久保存在 Google Sheet (TuitionHistory) 內！`;
+        setTimeout(() => banner.style.display = 'none', 4000);
+    } catch (error) {
+        alert("寫入失敗，請檢查網路連線或 Apps Script 部署狀態。");
+        banner.style.display = 'none';
+    }
+}
+
+// 11. 自動化核心基礎文本渲染
 function calculateEndTime(startTimeStr) {
     if (!startTimeStr || !startTimeStr.includes(':')) return startTimeStr;
-    const parts = startTimeStr.trim().split(':');
+    const parts = startTimeStr.split(':');
     let hour = parseInt(parts[0], 10);
     let min = parts[1];
-    if (isNaN(hour)) return startTimeStr;
-    
     hour = (hour + 1) % 24;
-    let hourStr = hour < 10 ? '0' + hour : hour;
-    return `${startTimeStr.trim()}-${hourStr}:${min}`;
+    return `${startTimeStr}-${hour < 10 ? '0' + hour : hour}:${min}`;
+}
+
+function getWeekday(dateString) {
+    if(!dateString) return '';
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    return weekdays[new Date(dateString).getDay()];
+}
+
+function formatMMDD(dateString) {
+    if(!dateString) return '';
+    const parts = dateString.split('-');
+    if(parts.length === 3) return `${parts[1]}-${parts[2]}`;
+    return '';
 }
 
 function switchTab(mode) {
@@ -226,20 +514,7 @@ function switchTab(mode) {
     generateText();
 }
 
-function getWeekday(dateString) {
-    if(!dateString) return '';
-    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-    const d = new Date(dateString);
-    return weekdays[d.getDay()];
-}
-
-function formatMMDD(dateString) {
-    if(!dateString) return '';
-    const parts = dateString.split('-');
-    if(parts.length === 3) return `${parts[1]}-${parts[2]}`;
-    return '';
-}
-
+// 🌟 核心修復：全面拔除原本格式中的 [ ] 括號 🌟
 function generateText() {
     let template = '';
     if (currentMode === 'course') {
@@ -252,8 +527,7 @@ function generateText() {
         const price_2_high = document.getElementById('price_2_high').value;
         const price_3_4 = document.getElementById('price_3_4').value;
         const address = document.getElementById('address').value;
-
-        template = `家長你好👋\n\n🎉恆常畫班免費試堂優惠\n（免費試堂只限初中班，啟蒙班2.5-3.5試堂費${trial_mami}）\n\n🎉黏土手工班試堂費${trial_clay}\n✨️即日報名送小畫僮畫簿+圍裙手袖\n✨️ 2人同行9折\n\n⭐️小班教學 （ 師生比例${ratio} )\n⭐️不代筆 不幫畫為教畫宗旨\n⭐️自己作品自己畫\n⭐️恆常班已包含節日手工＆材料🤩\n\n恆常班四堂優惠:\n\n1️⃣探索啟蒙班 （ 2.5-3歲 ）🎨\n  ${price_1}  /  四堂\n\n2️⃣藝術繪畫班 🎨\n初班 ( 4-5歲 ) ${price_2_low} / 四堂\n中班 ( 6-9歲 )  ${price_2_mid} / 四堂\n高班（ 10歲以上 ） ${price_2_high} / 四堂\n\n3️⃣ 黏土手工班 🧑🏼‍🎨\n4️⃣ 繪畫+黏土綜合班🎨 🧑🏼‍🎨\n（ 4 歲以上 ）${price_3_4} /  四堂\n\n⏱️1小時／堂（每週1堂）\n\n📍${address}`;
+        template = `家長你好👋\n\n🎉恆常畫班免費試堂優惠\n（免費試堂只限初中班，啟盟班2.5-3.5試堂費${trial_mami}）\n\n🎉黏土手工班試堂費${trial_clay}\n✨️即日報名送小畫僮畫簿+圍裙手袖\n✨️ 2人同行9折\n\n⭐️小班教學 （ 師生比例${ratio} )\n⭐️不代筆 不幫畫為教畫宗旨\n⭐️自己作品自己畫\n⭐️恆常班已包含節日手工＆材料🤩\n\n恆常班四堂優惠:\n\n1️⃣探索啟盟班 （ 2.5-3歲 ）🎨\n  ${price_1}  /  四堂\n\n2️⃣藝術繪畫班 🎨\n初班 ( 4-5歲 ) ${price_2_low} / 四堂\n中班 ( 6-9歲 )  ${price_2_mid} / 四堂\n高班（ 10歲以上 ） ${price_2_high} / 四堂\n\n3️⃣ 黏土手工班 🧑🏼‍🎨\n4️⃣ 繪畫+黏土綜合班🎨 🧑🏼‍🎨\n（ 4 歲以上 ）${price_3_4} /  四堂\n\n⏱️1小時／堂（每週1堂）\n\n📍${address}`;
     } else {
         const t_month = document.getElementById('t_month').value;
         const t_year = document.getElementById('t_year').value;
@@ -262,19 +536,11 @@ function generateText() {
         let schedule = '';
         for(let i=1; i<=lessonCount; i++){
             const d = document.getElementById(`date_picker_${i}`).value;
-            const rawTime = document.getElementById(`time_picker_${i}`).value;
-            // 自動計算帶出一小時後的完整時間區段
-            const formattedTime = calculateEndTime(rawTime);
-            
-            if(d) schedule += `${i}. ${formatMMDD(d)} (${getWeekday(d)}) ${formattedTime}\n`;
+            const t = document.getElementById(`time_picker_${i}`).value;
+            if(d) schedule += `${i}. ${formatMMDD(d)} (${getWeekday(d)}) ${calculateEndTime(t)}\n`;
         }
-        const t_price = document.getElementById('t_price').value;
-        const t_payme = document.getElementById('t_payme').value;
-        const t_payme_tel = document.getElementById('t_payme_tel').value;
-        const t_bank = document.getElementById('t_bank').value;
-        const t_fps = document.getElementById('t_fps').value;
-
-        template = `${t_month}\n年份：[${t_year}]\n\n班別：[${t_class}]\n學生：[${t_student}]\n\n【課堂時間表】\n${schedule}${t_price}\n\n付款方式如下：\n\nPayme:${t_payme_tel}\n一按即 PayMe！\n${t_payme}\n\n${t_bank}\n\nHSBC FPS ID：${t_fps}\n\n‼️注意‼️轉帳必須留學生姓名 感謝🙏🏻\n過數後請截圖去小畫僮WhatsApp🫶\nThank you`;
+        // 這裡已經把原本的 [年份]、[班別]、[學生] 的中括號完全移除！
+        template = `${t_month}\n年份：${t_year}\n\n班別：${t_class}\n學生：${t_student}\n\n【課堂時間表】\n${schedule}${document.getElementById('t_price').value}\n\n付款方式如下：\n\nPayme:${document.getElementById('t_payme_tel').value}\n一按即 PayMe！\n${document.getElementById('t_payme').value}\n\n${document.getElementById('t_bank').value}\n\nHSBC FPS ID：${document.getElementById('t_fps').value}\n\n‼️注意‼️轉帳必須留學生姓名 感謝🙏🏻\n過數後請截圖去小畫僮WhatsApp🫶\nThank you`;
     }
     document.getElementById('outputText').value = template.trim();
 }
@@ -282,13 +548,9 @@ function generateText() {
 function copyToClipboard() {
     const copyText = document.getElementById("outputText");
     copyText.select();
-    copyText.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(copyText.value);
-    alert("已複製新格式文字，可以直接去對接 Make 喇！");
+    alert("已複製豪華排堂文字！可以直接去對接 Make 囉！");
 }
-
-// 預設初始化
-for(let i=0; i<4; i++) { addLesson(); }
 </script>
 </body>
 </html>
